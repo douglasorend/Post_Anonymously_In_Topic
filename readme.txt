@@ -1,5 +1,5 @@
 [hr]
-[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v1.1[/b][/size][/color]
+[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v1.2[/b][/size][/color]
 [url=http://www.simplemachines.org/community/index.php?action=profile;u=253913][b]By Dougiefresh[/b][/url] -> [url=http://custom.simplemachines.org/mods/index.php?mod=4078]Link to Mod[/url]
 [/center]
 [hr]
@@ -28,7 +28,7 @@ The [b]Who Can See Anonymous Poster[/b] is under [b]Admin[/b] -> [b]Forum[/b] ->
 o [url=http://www.simplemachines.org/community/index.php?topic=538075.0]Option to post Anonymously on topics[/url]
 
 [color=blue][b][size=12pt][u]Compatibility Notes[/u][/size][/b][/color]
-This mod was tested on SMF 2.0.11, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
+This mod was tested on SMF 2.0.11 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
 
 [url=http://custom.simplemachines.org/mods/index.php?mod=2324]Recount Member Posts[/url] must be installed prior to installing this mod if you want the anonymous posts recounted at the same time as the regular posts.
 

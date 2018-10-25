@@ -32,12 +32,12 @@
 	<operation>
 		<search position="replace"><![CDATA[$messages_request = $smcFunc['db_query']('', '
 			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, id_member, modified_time, modified_name, body,
-				smileys_enabled, poster_name, poster_email, approved,]]></search>
+				id_msg, icon, subject, poster_time, poster_ip, id_member, modified_time, modified_name, modified_reason, body,
+				smileys_enabled, poster_name, poster_email, approved, likes,]]></search>
 		<add><![CDATA[$messages_request = $smcFunc['db_query']('', '
 			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, ' . $id_mem . 'id_member, modified_time, modified_name, body,
-				smileys_enabled, poster_name, poster_email, approved, ' . $anon . ' AS anonymous,]]></add>
+				id_msg, icon, subject, poster_time, poster_ip, ' . $id_mem . 'id_member, modified_time, modified_name, modified_reason, body,
+				smileys_enabled, poster_name, poster_email, approved, likes, ' . $anon . ' AS anonymous,]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['new_from' => $topicinfo['new_from'],]]></search>
@@ -68,8 +68,8 @@
 		<add><![CDATA[, $user_info]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA[			mem.usertitle' : '')]]></search>
-		<add><![CDATA[ . ', mem.anon_posts']]></add>
+		<search position="before"><![CDATA[mem.usertitle, ' : '') . ']]></search>
+		<add><![CDATA[ mem.anon_posts,]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA[mem.password_salt, mem.pm_prefs]]></search>
@@ -176,15 +176,15 @@
 <file name="$sourcedir/ManagePermissions.php">
 	<!-- loadAllPermissions function -->
 	<operation>
-		<search position="before"><![CDATA['karma_edit' => array(false, 'general', 'moderate_general'),]]></search>
+		<search position="before"><![CDATA['search_posts' => array(false, 'general'),]]></search>
 		<add><![CDATA[
-			'post_anonymously' => array(false, 'general', 'make_posts'),
-			'see_who_posted_anonymously' => array(false, 'general', 'make_posts'),]]></add>
+			'post_anonymously' => array(false, 'general'),
+			'see_who_posted_anonymously' => array(false, 'general'),]]></add>
 	</operation>
 
 	<!-- loadIllegalGuestPermissions function -->
 	<operation>
-		<search position="after"><![CDATA['approve_posts',
+		<search position="after"><![CDATA['split_any',
 	);]]></search>
 		<add><![CDATA['post_anonymously',
 		]]></add>
@@ -256,7 +256,11 @@
 <file name="$sourcedir/Post.php">
 	<!-- Post function -->
 	<operation>
-		<search position="after"><![CDATA[// !!! These won't work if you're posting an event!]]></search>
+		<search position="before"><![CDATA[global $user_info, $context, $settings]]></search>
+		<add><![CDATA[, $board_info]]></add>
+	</operation>
+	<operation>
+		<search position="after"><![CDATA[// @todo These won't work if you're posting an event!]]></search>
 		<add><![CDATA[// Check to make sure that the user can post anonymously:
 	$context['can_post_anonymously'] = allowedTo('post_anonymously') && !empty($board_info['post_anon']);
 
@@ -266,19 +270,22 @@
 		<search position="replace"><![CDATA[// Editing a message...
 	elseif (isset($_REQUEST['msg']) && !empty($topic))
 	{
+		$context['editing'] = true;
+
 		$_REQUEST['msg'] = (int) $_REQUEST['msg'];
 
-		// Get the existing message.
+		// Get the existing message. Editing.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				m.id_member, m.modified_time, m.smileys_enabled, m.body,
+				m.id_member, m.modified_time, m.modified_name, m.modified_reason, m.smileys_enabled, m.body,
 				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
 				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
 				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
-				m.poster_time
+				m.poster_time, log.id_action
 			FROM {db_prefix}messages AS m
 				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
 				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})
+					LEFT JOIN {db_prefix}log_actions AS log ON (m.id_topic = log.id_topic AND log.action = {string:announce_action})
 			WHERE m.id_msg = {int:id_msg}
 				AND m.id_topic = {int:current_topic}',
 			array(]]></search>
@@ -292,17 +299,18 @@
 		$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
 		$id_mem = (empty($user_info['id']) || !$see_mine ? 'm.id_member' : 'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
 		
-		// Get the existing message.
+		// Get the existing message. Editing.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				' . $id_mem . ' AS id_member, m.modified_time, m.smileys_enabled, m.body, m.anonymous,
+				' . $id_mem . ' AS id_member, m.modified_time, m.modified_name, m.modified_reason, m.smileys_enabled, m.body, m.anonymous,
 				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
 				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
 				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
-				m.poster_time
+				m.poster_time, log.id_action
 			FROM {db_prefix}messages AS m
 				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
 				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})
+					LEFT JOIN {db_prefix}log_actions AS log ON (m.id_topic = log.id_topic AND log.action = {string:announce_action})
 			WHERE m.id_msg = {int:id_msg}
 				AND m.id_topic = {int:current_topic}',
 			array(
@@ -585,7 +593,7 @@
 <file name="$sourcedir/Recent.php">
 	<!-- RecentPosts function -->
 	<operation>
-		<search position="before"><![CDATA[global $txt, $scripturl, $user_info, $context, $modSettings, $sourcedir, $board, $smcFunc]]></search>
+		<search position="before"><![CDATA[global $txt, $scripturl, $user_info, $context, $modSettings, $board, $smcFunc]]></search>
 		<add><![CDATA[, $settings]]></add>
 	</operation>
 	<operation>
@@ -763,8 +771,8 @@
 	]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA[IFNULL(mem.id_member, 0) AS id_member, m.id_msg,]]></search>
-		<add><![CDATA[ ' . $m_an . ' AS anon,]]></add>
+		<search position="before"><![CDATA[IFNULL(mem.id_member, 0) AS id_member, mem.avatar, m.id_msg]]></search>
+		<add><![CDATA[, ' . $m_an . ' AS anon]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['topic' => $row_board['id_topic']]]></search>
@@ -774,6 +782,10 @@
 	<operation>
 		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)' . ($user_info['is_guest'] ? '' : ']]></search>
 		<add><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = ' . $m_id . ')' . ($user_info['is_guest'] ? '' : ']]></add>
+	</operation>
+	<operation>
+		<search position="after"><![CDATA[$this_last_post['member']['link']]]></search>
+		<add><![CDATA[$this_last_post['anon'] . ' ' . ]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Subs-Boards.php">
@@ -791,8 +803,8 @@
 
 	<!-- getBoardTree function -->
 	<operation>
-		<search position="before"><![CDATA[b.num_posts, b.num_topics, c.id_cat, c.name AS cat_name, c.cat_order, c.can_collapse]]></search>
-		<add><![CDATA[, b.post_anon]]></add>
+		<search position="before"><![CDATA[b.board_order, b.count_posts, b.member_groups, b.id_theme, b.override_theme, b.id_profile, b.redirect,]]></search>
+		<add><![CDATA[ b.post_anon,]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['order' => $row['board_order'],]]></search>
@@ -806,7 +818,8 @@
 		<search position="before"><![CDATA[// Make these peoples' posts guest posts.
 	$smcFunc['db_query']('', '
 		UPDATE {db_prefix}messages
-		SET id_member = {int:guest_id}, poster_email = {string:blank_email}]]></search>
+		SET id_member = {int:guest_id}' . (!empty($modSettings['deleteMembersRemovesEmail']) ? ',
+		poster_email = {string:blank_email}' : '') . ']]></search>
 		<add><![CDATA[, anonymous = {int:guest_id}]]></add>
 	</operation>
 </file>
@@ -856,7 +869,7 @@
 	<operation>
 		<search position="before"><![CDATA[function modifyPost(&$msgOptions, &$topicOptions, &$posterOptions)
 {
-	global $user_info, $modSettings, $smcFunc, $context]]></search>
+	global $user_info, $modSettings, $smcFunc, $sourcedir]]></search>
 		<add><![CDATA[, $txt]]></add>
 	</operation>
 	<operation>
@@ -937,44 +950,8 @@
 </file>
 
 <!------------------------------------------------------------------------------>
-<!-- Core Template changes                                                    -->
-<!------------------------------------------------------------------------------>
-<file name="$boarddir/Themes/core/Recent.template.php" error="skip">
-	<operation>
-		<search position="replace"><![CDATA[$txt['by'] . ' ' . $post['poster']['link']]]></search>
-		<add><![CDATA[$txt['by'] . ' ' . $post['anonymous'] . $post['poster']['link']]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[', $topic['first_post']['member']['link'], ']]></search>
-		<add><![CDATA[', $topic['first_post']['anonymous'], $topic['first_post']['member']['link'], ']]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>
-]]></search>
-		<add><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>', str_replace(' />', ' style="float: right;" />', $topic['last_post']['anonymous']), '
-]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[', $topic['first_post']['member']['link'], ']]></search>
-		<add><![CDATA[', $topic['first_post']['anonymous'], $topic['first_post']['member']['link'], ']]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>
-]]></search>
-		<add><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>', str_replace(' />', ' style="float: right;" />', $topic['last_post']['anonymous']), '
-]]></add>
-	</operation>
-</file>
-
-<!------------------------------------------------------------------------------>
 <!-- Template changes                                                         -->
 <!------------------------------------------------------------------------------>
-<file name="$themedir/BoardIndex.template.php">
-	<operation>
-		<search position="after"><![CDATA[$txt['last_post'], '</strong>  ', $txt['by'], ' ', $board['last_post']['member']['link'] , '<br />]]></search>
-		<add><![CDATA[$board['last_post']['anon'], ]]></add>
-	</operation>
-</file>
 <file name="$themedir/Display.template.php">
 	<operation>
 		<search position="after"><![CDATA[, $message['member']['link'], ']]></search>
@@ -1006,19 +983,15 @@
 		<add><![CDATA[$topic['first_post']['anon'], ]]></add>
 	</operation>
 	<operation>
-		<search position="after"><![CDATA[$txt['last_post'], '</strong>  ', ]]></search>
-		<add><![CDATA[$board['last_post']['anon'], ]]></add>
-	</operation>
-	<operation>
-		<search position="before"><![CDATA[title="', $txt['last_post'], '" /></a>]]></search>
-		<add><![CDATA[', $topic['last_post']['anon'], ']]></add>
+		<search position="after"><![CDATA[$topic['last_post']['member']['link']), '</p>]]></search>
+		<add><![CDATA[$topic['last_post']['anon'] . ' ' . ]]></add>
 	</operation>
 </file>
 <file name="$themedir/Post.template.php">
 	<operation>
-		<search position="before"><![CDATA[', $context['show_approval'] ? '<li><label for="approve"><input type="checkbox" name="approve" id="approve" value="2" class="input_check" ' . ($context['show_approval'] === 2 ? 'checked="checked"' : '') . ' /> ' . $txt['approve_this_post'] . '</label></li>' : '', ']]></search>
+		<search position="before"><![CDATA[', $context['show_approval'] ? '<li><label for="approve"><input type="checkbox" name="approve" id="approve" value="2" class="input_check"' . ($context['show_approval'] === 2 ? ' checked' : '') . '> ' . $txt['approve_this_post'] . '</label></li>' : '', ']]></search>
 		<add><![CDATA[
-							', $context['can_post_anonymously'] ? '<li><label for="anonymous"><input type="checkbox" name="anonymous" id="anonymous" value="1" class="input_check" ' . (!empty($context['posted_anonymously']) ? 'checked="checked"' : '') . ' /> ' . $txt['post_anonymously'] . '</label></li>' : '', ']]></add>
+							', $context['can_post_anonymously'] ? '<li><label for="anonymous"><input type="checkbox" name="anonymous" id="anonymous" value="1" class="input_check"' . (!empty($context['posted_anonymously']) ? ' checked' : '') . ' /> ' . $txt['post_anonymously'] . '</label></li>' : '', ']]></add>
 	</operation>
 </file>
 <file name="$themedir/Profile.template.php">
@@ -1039,25 +1012,5 @@
 		<search position="after"><![CDATA[<strong>', $post['poster']['link'], ' </strong>]]></search>
 		<add><![CDATA[', $post['anonymous'], ']]></add>
 	</operation>
-	<operation>
-		<search position="replace"><![CDATA[', $txt['started_by'], ' <strong>', $topic['first_post']['member']['link'], '</strong>]]></search>
-		<add><![CDATA[', $txt['started_by'], ' ', $topic['first_post']['anonymous'], '<strong>', $topic['first_post']['member']['link'], '</strong>]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>
-]]></search>
-		<add><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>', $topic['last_post']['anonymous'], '
-]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[', $txt['started_by'], ' <strong>', $topic['first_post']['member']['link'], '</strong>]]></search>
-		<add><![CDATA[', $txt['started_by'], ' ', $topic['first_post']['anonymous'], '<strong>', $topic['first_post']['member']['link'], '</strong>]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>
-]]></search>
-		<add><![CDATA[<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.gif" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" style="float: right;" /></a>', $topic['last_post']['anonymous'], '
-]]></add>
-	</operation>
-</file>
+	</file>
 </modification>

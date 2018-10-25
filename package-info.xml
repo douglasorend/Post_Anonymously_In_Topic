@@ -5,7 +5,7 @@
 	<id>Dougiefresh:AnonymousPost</id>
 	<name>Post Anonymously In Topic</name>
 	<type>modification</type>
-	<version>1.1</version>
+	<version>1.2</version>
 
 	<install for="2.0 - 2.0.99">
 		<readme parsebbc="true">readme.txt</readme>
@@ -18,6 +18,21 @@
 	<uninstall for="2.0 - 2.0.99">
 		<readme parsebbc="true">uninstall.txt</readme>
 		<modification reverse="true">install_20x.xml</modification>
+		<modification reverse="true">language_english.xml</modification>
+		<remove-file name="$imagesdir/ghost.png" />
+	</uninstall>
+
+	<install for="2.1 Beta 2">
+		<readme parsebbc="true">readme.txt</readme>
+		<database>db_install.php</database>
+		<modification>install_21x.xml</modification>
+		<modification>language_english.xml</modification>
+		<require-file name="ghost.png" destination="$imagesdir" />
+		<redirect timeout="5000" url="?action=admin;area=postsettings" />
+	</install>
+	<uninstall for="2.1 Beta 2">
+		<readme parsebbc="true">uninstall.txt</readme>
+		<modification reverse="true">install_21x.xml</modification>
 		<modification reverse="true">language_english.xml</modification>
 		<remove-file name="$imagesdir/ghost.png" />
 	</uninstall>
