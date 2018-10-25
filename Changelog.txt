@@ -1,3 +1,6 @@
+v2.2 - December 15th, 2016
+o Fixed error in RemoveTopics function that broke the ability to remove posts.
+
 v2.1 - November 30th, 2016
 o Added code to allow user to click to make a post anonymous or not from the post display screen.
 o Added new permission to allow topic starters to see who posted anonymously within the board.

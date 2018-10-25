@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.0</version>
+<version>2.2</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -531,7 +531,7 @@
 		SELECT t.id_member_started, m.id_member, m.subject, m.poster_time, m.approved]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
 	$m_id = $smcFunc['PAIT_id']('m');
-	$t_id = str_replace('m.id_member', 'm.id_member_started', $m_id);
+	$t_id = str_replace('m.id_member', 't.id_member_started', $m_id);
 	
 	$request = $smcFunc['db_query']('', '
 		SELECT ' . $t_id . ' AS id_member_started, ' . $m_id . ' AS id_member, m.subject, m.poster_time, m.approved]]></add>
