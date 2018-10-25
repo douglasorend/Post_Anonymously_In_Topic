@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>1.4</version>
+<version>1.5</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -178,8 +178,8 @@
 	<operation>
 		<search position="before"><![CDATA['karma_edit' => array(false, 'general', 'moderate_general'),]]></search>
 		<add><![CDATA[
-			'post_anonymously' => array(false, 'general', 'make_posts'),
-			'see_who_posted_anonymously' => array(false, 'general', 'make_posts'),]]></add>
+			'post_anonymously' => array(false, 'general', 'view_basic_info'),
+			'see_who_posted_anonymously' => array(false, 'general', 'view_basic_info'),]]></add>
 	</operation>
 
 	<!-- loadIllegalGuestPermissions function -->

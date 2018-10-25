@@ -1,3 +1,6 @@
+v1.5 - September 14th, 2016
+o Fixed visible permissions issue when viewing permissions in [b]Simple[/b] mode.
+
 v1.4 - June 12th, 2016
 o Fixed issue in MessageIndex.php where wrong user was returned as last poster.
 
