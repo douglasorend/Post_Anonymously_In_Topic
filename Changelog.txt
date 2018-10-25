@@ -1,3 +1,6 @@
+v2.6 - July 5th, 2017
+o Updated mod to install correctly on SMF 2.0.14.
+
 v2.5 - April 30th, 2017
 o Added missing admin hook to fix admin settings not showing up.
 

@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.5</version>
+<version>2.6</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -409,21 +409,17 @@
 	
 	<!-- trackActivity function -->
 	<operation>
-		<search position="replace"><![CDATA[// If this is a big forum, or a large posting user, let's limit the search.
-	if ($modSettings['totalMessages'] > 50000 && $user_profile[$memID]['posts'] > 500)
-	{
-		$request = $smcFunc['db_query']('', '
-			SELECT MAX(id_msg)
-			FROM {db_prefix}messages AS m
-			WHERE m.id_member]]></search>
+		<search position="after"><![CDATA[// If this is a big forum, or a large posting user, let's limit the search.]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
 	$id_num = $smcFunc['PAIT_id']('m');
 
-	// If this is a big forum, or a large posting user, let's limit the search.
-	if ($modSettings['totalMessages'] > 50000 && $user_profile[$memID]['posts'] > 500)
-	{
-		$request = $smcFunc['db_query']('', '
-			SELECT MAX(id_msg)
+	]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[SELECT MAX(id_msg)
+			FROM {db_prefix}messages AS m
+			WHERE m.id_member]]></search>
+		<add><![CDATA[SELECT MAX(id_msg)
 			FROM {db_prefix}messages AS m
 			WHERE ' . $id_num . ']]></add>
 	</operation>
