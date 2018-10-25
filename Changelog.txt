@@ -1,3 +1,6 @@
+v1.3 - April 7th, 2016
+o Added Spanish Latin translation by [url=http://www.simplemachines.org/community/index.php?action=profile;u=322597]Rock Lee [BC][/url].
+
 v1.2 - March 25th, 2016
 o Added support for SMF 2.1 Beta 2.
 
