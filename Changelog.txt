@@ -1,3 +1,6 @@
+v1.4 - June 12th, 2016
+o Fixed issue in MessageIndex.php where wrong user was returned as last poster.
+
 v1.3 - April 7th, 2016
 o Added Spanish Latin translation by [url=http://www.simplemachines.org/community/index.php?action=profile;u=322597]Rock Lee [BC][/url].
 

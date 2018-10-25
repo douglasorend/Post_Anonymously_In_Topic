@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>1.3</version>
+<version>1.4</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -222,7 +222,7 @@
 		$mf_an = (empty($user_info['id']) ? '0' : ($see_mine ? 'IF(mf.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)' : '0'));
 		$ml_an = (empty($user_info['id']) ? '0' : ($see_mine ? 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)' : '0'));
 		$mf_id = (empty($user_info['id']) ? 'mf.id_member' : ($see_mine ? 'IF(mf.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', mf.anonymous, mf.id_member)' : 'mf.id_member'));
-		$ml_id = (empty($user_info['id']) ? 'ml.id_member' : ($see_mine ? 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', ml.anonymous, ml.id_member)' : 'mf.id_member'));
+		$ml_id = (empty($user_info['id']) ? 'ml.id_member' : ($see_mine ? 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', ml.anonymous, ml.id_member)' : 'ml.id_member'));
 		
 		]]></add>
 	</operation>
