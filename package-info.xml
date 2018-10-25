@@ -5,7 +5,7 @@
 	<id>Dougiefresh:AnonymousPost</id>
 	<name>Post Anonymously In Topic</name>
 	<type>modification</type>
-	<version>1.0</version>
+	<version>1.1</version>
 
 	<install for="2.0 - 2.0.99">
 		<readme parsebbc="true">readme.txt</readme>
@@ -13,6 +13,7 @@
 		<modification>install_20x.xml</modification>
 		<modification>language_english.xml</modification>
 		<require-file name="ghost.png" destination="$imagesdir" />
+		<redirect timeout="5000" url="?action=admin;area=postsettings" />
 	</install>
 	<uninstall for="2.0 - 2.0.99">
 		<readme parsebbc="true">uninstall.txt</readme>
