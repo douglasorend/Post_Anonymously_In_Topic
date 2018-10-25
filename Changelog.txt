@@ -1,3 +1,6 @@
+v2.4 - March 1st, 2017
+o Attempt fix to [b]BoardIndex.template.php[/b] display of "Array" string.
+
 v2.3 - February 10th, 2017
 o Fixed bug that showed "Reply Anonymously" button on Display page.
 o Fixed bug allowed changing your own post to anonymous if board doesn't allow it.
