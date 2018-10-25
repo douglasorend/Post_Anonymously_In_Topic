@@ -26,6 +26,7 @@ $hook_functions = array(
 	'integrate_load_permissions' => 'PAIT_Permissions',
 	'integrate_modify_modifications' => 'PAIT_Area',
 	'integrate_display_buttons' => 'PAIT_Display',
+	'integrate_admin_areas' => 'PAIT_Admin',
 	'integrate_exit' => 'PAIT_Exit',
 );
 

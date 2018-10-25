@@ -272,6 +272,7 @@ function PAIT_Admin(&$areas)
 {
 	global $txt;
 	$areas['config']['areas']['modsettings']['subsections']['pait'] = array($txt['PAIT_Title']);
+	echo '<pre>'; print_r($areas); exit;
 }
 
 function PAIT_Area(&$areas)

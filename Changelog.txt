@@ -1,3 +1,6 @@
+v2.5 - April 30th, 2017
+o Added missing admin hook to fix admin settings not showing up.
+
 v2.4 - March 1st, 2017
 o Attempt fix to [b]BoardIndex.template.php[/b] display of "Array" string.
 
