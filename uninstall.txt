@@ -1,0 +1,6 @@
+[hr]
+[center][color=red][size=16pt][b]WARNING!!!![/b][/size][/color][/center]
+[hr]
+Removing the database changes will delete the column that is responsible for linking the member with their anonymous posts.  
+
+Once done, all posts will remain anonymous and uneditable to the original poster (unless that membergroup can edit any post), even after reinstalling the mod.
