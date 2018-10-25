@@ -116,6 +116,19 @@ function PAIT_Display(&$buttons)
 		$buttons['post_anon'] = array('test' => 'can_reply', 'text' => 'reply_anonymously', 'image' => 'reply.gif', 'lang' => true, 'url' => $scripturl . '?action=post;topic=' . $context['current_topic'] . '.' . $context['start'] . ';last_msg=' . $context['topic_last_message'] . ';anon');
 }
 
+function PAIT_Pre_BoardIndex(&$extraBoardColumns, &$extraBoardParameters)
+{
+	$extraBoardColumns[] = 'b.post_anon';
+	$extraBoardColumns[] = 'b.child_level';
+}
+
+function PAIT_BoardTree_Board(&$row)
+{
+	global $boards;
+	$boards[$row['id_board']]['post_anon'] = $row['post_anon'];
+	$boards[$row['id_board']]['child_level'] = $row['child_level'];
+}
+
 //=================================================================================
 // Post Anonymously In Topic (PAIT) support functions
 //=================================================================================

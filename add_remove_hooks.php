@@ -28,6 +28,9 @@ $hook_functions = array(
 	'integrate_display_buttons' => 'PAIT_Display',
 	'integrate_admin_areas' => 'PAIT_Admin',
 	'integrate_exit' => 'PAIT_Exit',
+// SMF 2.1 Hooks:
+	'integrate_pre_boardtree' => 'PAIT_Pre_BoardIndex',
+	'integrate_boardtree_board' => 'PAIT_BoardTree_Board',
 );
 
 // Adding or removing them?

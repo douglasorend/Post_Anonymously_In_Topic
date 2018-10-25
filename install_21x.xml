@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.6</version>
+<version>2.7</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -24,7 +24,7 @@
 	]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('display_get_post_poster', '
+		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('', '
 		SELECT id_msg, id_member, approved]]></search>
 		<add><![CDATA[$request = $smcFunc['db_query']('display_get_post_poster', '
 		SELECT id_msg, ' . $id_mem . ' AS id_member, approved]]></add>
@@ -145,10 +145,10 @@
 	<operation>
 		<search position="replace"><![CDATA[INNER JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS meml ON (meml.id_member = ml.id_member)
-				LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = mf.id_member)' . ($user_info['is_guest'] ? '' : ']]></search>
+				LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = mf.id_member)' . (!empty($settings['avatars_on_indexes']) ? ']]></search>
 		<add><![CDATA[INNER JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
 				LEFT JOIN {db_prefix}members AS meml ON (meml.id_member = ' . $ml_id . ')
-				LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = ' . $mf_id . ')' . ($user_info['is_guest'] ? '' : ']]></add>
+				LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = ' . $mf_id . ')' . (!empty($settings['avatars_on_indexes']) ? ']]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['first_post' => array(]]></search>
@@ -164,8 +164,8 @@
 <file name="$sourcedir/Post.php">
 	<!-- Post function -->
 	<operation>
-		<search position="replace"><![CDATA[t.locked, IFNULL(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg, mf.id_member,]]></search>
-		<add><![CDATA[t.locked, IFNULL(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg, 
+		<search position="replace"><![CDATA[t.locked, COALESCE(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg, mf.id_member,]]></search>
+		<add><![CDATA[t.locked, COALESCE(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg,
 				' . $smcFunc['PAIT_id']('mf') . ' AS id_member,]]></add>
 	</operation>
 	<operation>
@@ -455,7 +455,7 @@
 	]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA[IFNULL(mem.real_name, m.poster_name) AS poster_name, t.id_last_msg]]></search>
+		<search position="before"><![CDATA[COALESCE(mem.real_name, m.poster_name) AS poster_name, t.id_last_msg]]></search>
 		<add><![CDATA[, ' . $anon . ' AS anonymous]]></add>
 	</operation>
 	<operation>
@@ -564,7 +564,7 @@
 <file name="$sourcedir/Subs.php">
 	<!-- updateMemberData function -->
 	<operation>
-		<search position="before"><![CDATA['notify_announcements', 'notify_send_body', 'notify_regularity', 'notify_types',]]></search>
+		<search position="before"><![CDATA['new_pm', 'pm_prefs', 'gender', 'show_online', 'pm_receive_from', 'alerts',]]></search>
 		<add><![CDATA[ 'post_anon', 'anon_posts', ]]></add>
 	</operation>
 </file>
@@ -579,7 +579,7 @@
 	]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA[IFNULL(mem.id_member, 0) AS id_member, mem.avatar, m.id_msg]]></search>
+		<search position="before"><![CDATA[COALESCE(mem.id_member, 0) AS id_member, mem.avatar, m.id_msg]]></search>
 		<add><![CDATA[ ' . $m_an . ' AS anon,]]></add>
 	</operation>
 	<operation>
@@ -588,8 +588,10 @@
 			'anon' => ($row_board['anon'] ? '<img src="' . $settings['images_url'] . '/ghost.png" alt="' . $txt['posted_anonymously'] . '" title="' . $txt['posted_anonymously'] . '" />' : '')]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)' . ($user_info['is_guest'] ? '' : ']]></search>
-		<add><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = ' . $m_id . ')' . ($user_info['is_guest'] ? '' : ']]></add>
+		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)' . (!empty($settings['avatars_on_boardIndex']) ? '
+			LEFT JOIN {db_prefix}attachments AS am ON (am.id_member = m.id_member)' : '') . '' . ($user_info['is_guest'] ? '' : ']]></search>
+		<add><![CDATA[LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = ' . $m_id . ')' . (!empty($settings['avatars_on_boardIndex']) ? '
+			LEFT JOIN {db_prefix}attachments AS am ON (am.id_member = ' . $m_id . ')' : '') . '' . ($user_info['is_guest'] ? '' : ']]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Subs-Boards.php">
@@ -603,18 +605,6 @@
 	{
 		$boardUpdates[] = 'post_anon = {int:post_anon}';
 		$boardUpdateParameters['post_anon'] = (int) $boardOptions['post_anon'];]]></add>
-	</operation>
-
-	<!-- getBoardTree function -->
-	<operation>
-		<search position="before"><![CDATA[b.num_posts, b.num_topics, b.deny_member_groups, c.id_cat, c.name AS cat_name, c.description AS cat_desc, c.cat_order, c.can_collapse]]></search>
-		<add><![CDATA[, b.post_anon, b.child_level]]></add>
-	</operation>
-	<operation>
-		<search position="before"><![CDATA['order' => $row['board_order'],]]></search>
-		<add><![CDATA[
-				'post_anon' => $row['post_anon'],
-				'child_level' => $row['child_level'],]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Subs-Members.php">

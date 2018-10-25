@@ -1,3 +1,8 @@
+v2.7 - July 7th, 2017
+o Added support for SMF 2.1 Beta 3.
+o Removed support for SMF 2.1 Beta 2.
+o Added anonymous posting support for Custom Form mod.
+
 v2.6 - July 5th, 2017
 o Updated mod to install correctly on SMF 2.0.14.
 

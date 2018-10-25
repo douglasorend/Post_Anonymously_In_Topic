@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.6</version>
+<version>2.7</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -696,6 +696,27 @@
 		pait_toggle($msgOptions['id'], $msgOptions['anonymous'], false);
 
 	]]></add>
+	</operation>
+</file>
+
+<!------------------------------------------------------------------------------>
+<!-- Custom Form mod changes                                                  -->
+<!------------------------------------------------------------------------------>
+<file name="$sourcedir/CustomForm.php" error="skip">
+	<!-- CustomForm function -->
+	<operation>
+		<search position="replace"><![CDATA[$vars[] = '/\{'.$field['title'].'\}/';
+				$replace[] = str_replace('$','\$',$value);]]></search>
+		<add><![CDATA[if ($field['title'] != 'anonymous')
+				{
+					$vars[] = '/\{'.$field['title'].'\}/';
+					$replace[] = str_replace('$','\$',$value);
+				}]]></add>
+	</operation>
+	<operation>
+		<search position="before"><![CDATA['smileys_enabled' => true,]]></search>
+		<add><![CDATA[
+					'anonymous' => !empty($_REQUEST['anonymous']) ? $_REQUEST['anonymous'] : 0,]]></add>
 	</operation>
 </file>
 

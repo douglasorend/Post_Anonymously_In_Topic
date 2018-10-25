@@ -1,5 +1,5 @@
 [hr]
-[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v2.6[/b][/size][/color]
+[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v2.7[/b][/size][/color]
 [url=http://www.simplemachines.org/community/index.php?action=profile;u=253913][b]By Dougiefresh[/b][/url] -> [url=http://custom.simplemachines.org/mods/index.php?mod=4078]Link to Mod[/url]
 [/center]
 [hr]
@@ -27,7 +27,7 @@ o [url=http://www.simplemachines.org/community/index.php?topic=538075.0]Option t
 o [url=http://www.simplemachines.org/community/index.php?topic=544446.msg3897899#msg3897899]Topic Starters Can See Who Posted Anonymously[/url]
 
 [color=blue][b][size=12pt][u]Compatibility Notes[/u][/size][/b][/color]
-This mod was tested on SMF 2.0.12 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
+This mod was tested on SMF 2.0.12 and SMF 2.1 Beta 3, but should work on SMF 2.0 and up.  SMF 2.1 Beta 2 and SMF 1.x is not and will not be supported.
 
 [color=blue][b][size=12pt][u]Changelog[/u][/size][/b][/color]
 The changelog has been removed and can be seen at [url=http://www.xptsp.com/board/index.php?topic=600.msg944#msg944]XPtsp.com[/url].
