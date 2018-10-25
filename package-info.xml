@@ -5,39 +5,51 @@
 	<id>Dougiefresh:AnonymousPost</id>
 	<name>Post Anonymously In Topic</name>
 	<type>modification</type>
-	<version>1.6</version>
+	<version>2.0</version>
 
 	<install for="2.0 - 2.0.99">
 		<readme parsebbc="true">readme.txt</readme>
+		<code>add_remove_hooks.php</code>
 		<database>db_install.php</database>
 		<modification>install_20x.xml</modification>
-		<modification>language_english.xml</modification>
-		<modification>language_spanish_latin.xml</modification>
 		<require-file name="ghost.png" destination="$imagesdir" />
-		<redirect timeout="5000" url="?action=admin;area=postsettings" />
+		<require-file name="Subs-PAIT.php" destination="$sourcedir" />
+		<require-file name="PAIT.english.php" destination="$languagedir" />
+		<require-file name="PAIT.spanish_latin.php" destination="$languagedir" />
+		<require-file name="PAIT.spanish_latin-utf8.php" destination="$languagedir" />
+		<redirect timeout="5000" url="?action=admin;area=modsettings" />
 	</install>
 	<uninstall for="2.0 - 2.0.99">
 		<readme parsebbc="true">uninstall.txt</readme>
+		<code>add_remove_hooks.php</code>
 		<modification reverse="true">install_20x.xml</modification>
-		<modification reverse="true">language_english.xml</modification>
-		<modification reverse="true">language_spanish_latin.xml</modification>
 		<remove-file name="$imagesdir/ghost.png" />
+		<remove-file name="$sourcedir/Subs-PAIT.php" />
+		<remove-file name="$languagedir/PAIT.english.php" />
+		<remove-file name="$languagedir/PAIT.spanish_latin.php" />
+		<remove-file name="$languagedir/PAIT.spanish_latin-utf8.php" />
 	</uninstall>
 
 	<install for="2.1 Beta 2">
 		<readme parsebbc="true">readme.txt</readme>
+		<code>add_remove_hooks.php</code>
 		<database>db_install.php</database>
 		<modification>install_21x.xml</modification>
-		<modification>language_english.xml</modification>
-		<modification>language_spanish_latin.xml</modification>
 		<require-file name="ghost.png" destination="$imagesdir" />
-		<redirect timeout="5000" url="?action=admin;area=postsettings" />
+		<require-file name="Subs-PAIT.php" destination="$sourcedir" />
+		<require-file name="PAIT.english.php" destination="$languagedir" />
+		<require-file name="PAIT.spanish_latin.php" destination="$languagedir" />
+		<require-file name="PAIT.spanish_latin-utf8.php" destination="$languagedir" />
+		<redirect timeout="5000" url="?action=admin;area=modsettings" />
 	</install>
 	<uninstall for="2.1 Beta 2">
+		<code>add_remove_hooks.php</code>
 		<readme parsebbc="true">uninstall.txt</readme>
 		<modification reverse="true">install_21x.xml</modification>
-		<modification reverse="true">language_english.xml</modification>
-		<modification reverse="true">language_spanish_latin.xml</modification>
 		<remove-file name="$imagesdir/ghost.png" />
+		<remove-file name="$sourcedir/Subs-PAIT.php" />
+		<remove-file name="$languagedir/PAIT.english.php" />
+		<remove-file name="$languagedir/PAIT.spanish_latin.php" />
+		<remove-file name="$languagedir/PAIT.spanish_latin-utf8.php" />
 	</uninstall>
 </package-info>

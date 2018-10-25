@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>1.6</version>
+<version>2.0</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -100,6 +100,15 @@
 		'real_anonymous' => comma_format($profile['anon_posts']),
 		'anonymous' => $profile['anon_posts'],]]></add>
 	</operation>
+
+	<!-- loadTheme function -->
+	<operation>
+		<search position="after"><![CDATA[// Wireless mode?  Load up the wireless stuff.]]></search>
+		<add><![CDATA[// Load "Post Anonymously" language strings:
+	loadLanguage('Post_Anonymously');
+
+	]]></add>
+	</operation>
 </file>
 <file name="$sourcedir/ManageBoards.php">
 	<!-- EditBoard function -->
@@ -171,41 +180,6 @@
 	$smcFunc['db_free_result']($request);
 
 	]]></add>
-	</operation>
-</file>
-<file name="$sourcedir/ManagePermissions.php">
-	<!-- loadAllPermissions function -->
-	<operation>
-		<search position="before"><![CDATA['search_posts' => array(false, 'general'),]]></search>
-		<add><![CDATA[
-			'post_anonymously' => array(false, 'general'),
-			'see_who_posted_anonymously' => array(false, 'general'),]]></add>
-	</operation>
-
-	<!-- loadIllegalGuestPermissions function -->
-	<operation>
-		<search position="after"><![CDATA['split_any',
-	);]]></search>
-		<add><![CDATA['post_anonymously',
-		]]></add>
-	</operation>
-
-	<!-- loadIllegalPermissions function -->
-	<operation>
-		<search position="before"><![CDATA[$context['illegal_permissions'][] = 'manage_permissions';]]></search>
-		<add><![CDATA[
-	if (!allowedTo('post_anonymously'))
-		$context['illegal_permissions'][] = 'post_anonymously';]]></add>
-	</operation>
-</file>
-<file name="$sourcedir/ManagePosts.php">
-	<!-- ModifyPostSettings function -->
-	<operation>
-		<search position="before"><![CDATA['postinput' => $txt['manageposts_minutes']),]]></search>
-		<add><![CDATA[
-		'',
-			// Post Anonymously mod
-			array('select', 'PAM_mode', array($txt['PAM_mode0'], $txt['PAM_mode1'], $txt['PAM_mode2'], $txt['PAM_mode3'])),]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/MessageIndex.php">

@@ -50,8 +50,9 @@ $smcFunc['db_add_column'](
 //==============================================================================
 // Set the default value for the PAM mode if not already set:
 //==============================================================================
-if (!isset($modSettings['PAM_mode']))
-	updateSettings(	array( 'PAM_mode' => 3 ) );
+global $modSettings;
+if (!isset($modSettings['PAIT_mode']))
+	updateSettings(	array( 'PAIT_mode' => !empty($modSettings['PAM_mode']) ? $modSettings['PAM_mode'] : 3 ) );
 
 // Echo that we are done if necessary:
 if ($SSI_INSTALL)

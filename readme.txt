@@ -1,5 +1,5 @@
 [hr]
-[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v1.6[/b][/size][/color]
+[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v2.0[/b][/size][/color]
 [url=http://www.simplemachines.org/community/index.php?action=profile;u=253913][b]By Dougiefresh[/b][/url] -> [url=http://custom.simplemachines.org/mods/index.php?mod=4078]Link to Mod[/url]
 [/center]
 [hr]
@@ -16,7 +16,7 @@ o [b]Everyone with "See Who Posted Anonymously" permission[/b] - OP plus memberg
 Admins and membergroups with the appropriate permission granted can also view who posted what anonymously, assuming that the posting setting is set to [b]"See Who Posted Anonymously" permission permitted[/b]....  Admin who don't want this feature active can disable it by going into the [b]Post Settings[/b] page and change the [b]Who Can See Anonymous Poster[/b] setting.
 
 [color=blue][b][size=12pt][u]Admin Settings[/u][/size][/b][/color]
-There is a new setting under [b]Admin[/b] -> [b]Forum[/b] -> [b]Boards[/b] -> [b]Modify[/b] called [b]Able to post anonymously in this board?[/b], which controls whether membergroups can post anonymously in that board.
+There is a new setting under [b]Admin[/b] -> [b]Configuration[/b] -> [b]Modification Settings[/b] called [b]Able to post anonymously in this board?[/b], which controls whether membergroups can post anonymously in that board.
 
 There are two new membergroup permissions added in the Admin Area:
 o [b]Post Anonymously[/b]
@@ -29,8 +29,6 @@ o [url=http://www.simplemachines.org/community/index.php?topic=538075.0]Option t
 
 [color=blue][b][size=12pt][u]Compatibility Notes[/u][/size][/b][/color]
 This mod was tested on SMF 2.0.11 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
-
-[url=http://custom.simplemachines.org/mods/index.php?mod=2324]Recount Member Posts[/url] must be installed prior to installing this mod if you want the anonymous posts recounted at the same time as the regular posts.
 
 [color=blue][b][size=12pt][u]Compatibility With Likes Mod[/u][/size][/b][/color]
 If operation # 1 in the [b]Sources/Profile-View.php[/b] reads [b]Test Failed[/b] and operation # 2 is [b]Test Successful[/b], then it is safe to proceed with installation.  Operation # 2 addresses a weird change that the Likes mod makes that I can't overcome any other way....

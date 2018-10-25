@@ -1,3 +1,12 @@
+v2.0 - November 26th, 2016
+o Added code to globalize related database decisions into function in [b]Subs-PAIT.php[/b]
+o Moved permissions and settings code into [b]Subs-PAIT.php[/b].
+o Moved all new language strings into seperate language files.
+o Fixed error that occurs when changing a post to/from anonymous.
+o Fixed issue where users couldn't see their own anonymous post.
+o Fixed issue where user that posted anonymous post wasn't able to edit said post.
+o Fixed issue where anonymous status wasn't automatically retained while editing.
+
 v1.6 - October 30th, 2016
 o Mostly resolved install errors when using with the Likes mod.
 

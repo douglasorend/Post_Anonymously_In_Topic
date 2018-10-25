@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>1.5</version>
+<version>2.0</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -16,29 +16,22 @@
 		'post_anonymously' => 'post_anonymously',]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[// Get each post and poster in this topic.
-	$request = $smcFunc['db_query']('display_get_post_poster', '
-		SELECT id_msg, id_member, approved]]></search>
+		<search position="after"><![CDATA[// Get each post and poster in this topic.]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_mem = (empty($user_info['id']) || !$see_mine ? '' : 'IF(anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', anonymous, id_member) AS ');
-	$anon = (empty($user_info['id']) || !$see_mine ? '0' : 'IF(anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)');
+	$id_mem = $smcFunc['PAIT_id']();
+	$anon = $smcFunc['PAIT_an']();
 
-	// Get each post and poster in this topic.
-	$request = $smcFunc['db_query']('display_get_post_poster', '
-		SELECT id_msg, ' . $id_mem . 'id_member, approved]]></add>
+	]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[poster_ip, id_member, modified_time, modified_name, body,
-				smileys_enabled, poster_name, poster_email, approved,]]></search>
-		<add><![CDATA[poster_ip, ' . $id_mem . 'id_member, modified_time, modified_name, body,
-				smileys_enabled, poster_name, poster_email, approved, ' . $anon . ' AS anonymous,]]></add>
+		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('display_get_post_poster', '
+		SELECT id_msg, id_member, approved]]></search>
+		<add><![CDATA[$request = $smcFunc['db_query']('display_get_post_poster', '
+		SELECT id_msg, ' . $id_mem . ' AS id_member, approved]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA['new_from' => $topicinfo['new_from'],]]></search>
-		<add><![CDATA[
-				'current_member' => $user_info['id'],]]></add>
+		<search position="replace"><![CDATA[poster_ip, id_member, ]]></search>
+		<add><![CDATA[poster_ip, ' . $id_mem . ' AS id_member, ' . $anon . ' AS anonymous,]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['can_see_ip' => allowedTo('moderate_forum') || ($message['id_member'] == $user_info['id'] && !empty($user_info['id'])),]]></search>
@@ -49,8 +42,8 @@
 <file name="$sourcedir/Load.php">
 	<!-- loadBoard function -->
 	<operation>
-		<search position="before"><![CDATA[b.id_theme, b.override_theme, b.count_posts,]]></search>
-		<add><![CDATA[ b.post_anon,]]></add>
+		<search position="after"><![CDATA[b.id_theme, b.override_theme, b.count_posts,]]></search>
+		<add><![CDATA[b.post_anon, ]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['name' => $row['bname'],]]></search>
@@ -78,7 +71,8 @@
 	<operation>
 		<search position="before"><![CDATA[$new_loaded_ids = array();]]></search>
 		<add><![CDATA[
-		$see_who = ($modSettings['PAM_mode'] < 2 ? false : ($modSettings['PAM_mode'] == 3 && allowedTo('see_who_posted_anonymously')));]]></add>
+		$see_who = ($modSettings['PAIT_mode'] == 2) || ($modSettings['PAIT_mode'] == 3 && allowedTo('see_who_posted_anonymously'));
+]]></add>
 	</operation>
 	<operation>
 		<search position="after"><![CDATA[$user_profile[$row['id_member']] = $row;]]></search>
@@ -117,108 +111,15 @@
 		$boardOptions['post_anon'] = isset($_POST['post_anon']);]]></add>
 	</operation>
 </file>
-<file name="$sourcedir/ManageMaintenance.php">
-	<operation error="ignore">
-		<search position="replace"><![CDATA[if (empty($_REQUEST['start']))
-		$_REQUEST['start'] = 0;
-
-	// Grab the first set of members to verify.]]></search>
-		<add><![CDATA[if (empty($_REQUEST['start']))
-	{
-		$_REQUEST['start'] = 0;
-		$smcFunc['db_query']('', 'UPDATE {db_prefix}members SET anon_posts = 0');
-		$smcFunc['db_query']('', 'UPDATE {db_prefix}members SET posts = 0');
-	}
-	
-	// Grab the first set of members to verify.]]></add>
-	</operation>
-	<operation error="ignore">
-		<search position="after"><![CDATA[$_REQUEST['start'] += $increment;
-
-	// Continue?]]></search>
-		<add><![CDATA[// Grab the first set of members to verify.
-	$request = $smcFunc['db_query']('', '
-		SELECT m.anonymous AS id_member, COUNT(m.anonymous) AS anon_posts
-		FROM {db_prefix}messages AS m
-		LEFT JOIN {db_prefix}boards AS b
-			ON m.id_board = b.id_board
-		WHERE m.anonymous != 0
-			AND b.count_posts = 0
-		GROUP BY m.anonymous
-		LIMIT {int:start}, {int:max}',
-
-		array(
-			'start' => $_REQUEST['start'],
-			'max' => $increment,
-		));
-
-	while ($row = $smcFunc['db_fetch_assoc']($request))
-	{
-		// Update the post count.
-		$smcFunc['db_query']('', '
-			UPDATE {db_prefix}members
-			SET anon_posts = {int:anon_posts}
-			WHERE id_member = {int:id_member}',
-			array(
-				'anon_posts' => $row['anon_posts'],
-				'id_member' => $row['id_member']
-		));
-	}
-	$smcFunc['db_free_result']($request);
-
-	]]></add>
-	</operation>
-</file>
-<file name="$sourcedir/ManagePermissions.php">
-	<!-- loadAllPermissions function -->
-	<operation>
-		<search position="before"><![CDATA['karma_edit' => array(false, 'general', 'moderate_general'),]]></search>
-		<add><![CDATA[
-			'post_anonymously' => array(false, 'general', 'view_basic_info'),
-			'see_who_posted_anonymously' => array(false, 'general', 'view_basic_info'),]]></add>
-	</operation>
-
-	<!-- loadIllegalGuestPermissions function -->
-	<operation>
-		<search position="after"><![CDATA['approve_posts',
-	);]]></search>
-		<add><![CDATA['post_anonymously',
-		]]></add>
-	</operation>
-
-	<!-- loadIllegalPermissions function -->
-	<operation>
-		<search position="before"><![CDATA[$context['illegal_permissions'][] = 'manage_permissions';]]></search>
-		<add><![CDATA[
-	if (!allowedTo('post_anonymously'))
-		$context['illegal_permissions'][] = 'post_anonymously';]]></add>
-	</operation>
-</file>
-<file name="$sourcedir/ManagePosts.php">
-	<!-- ModifyPostSettings function -->
-	<operation>
-		<search position="before"><![CDATA['postinput' => $txt['manageposts_minutes']),]]></search>
-		<add><![CDATA[
-		'',
-			// Post Anonymously mod
-			array('select', 'PAM_mode', array($txt['PAM_mode0'], $txt['PAM_mode1'], $txt['PAM_mode2'], $txt['PAM_mode3'])),]]></add>
-	</operation>
-</file>
 <file name="$sourcedir/MessageIndex.php">
 	<!-- MessageIndex function -->
 	<operation>
-		<search position="before"><![CDATA[global $txt, $scripturl, $board, $modSettings, $context]]></search>
-		<add><![CDATA[, $modSettings]]></add>
-	</operation>
-	<operation>
 		<search position="after"><![CDATA[$result = $smcFunc['db_query']('substring', ']]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-		$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-		$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-		$mf_an = (empty($user_info['id']) ? '0' : ($see_mine ? 'IF(mf.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)' : '0'));
-		$ml_an = (empty($user_info['id']) ? '0' : ($see_mine ? 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)' : '0'));
-		$mf_id = (empty($user_info['id']) ? 'mf.id_member' : ($see_mine ? 'IF(mf.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', mf.anonymous, mf.id_member)' : 'mf.id_member'));
-		$ml_id = (empty($user_info['id']) ? 'ml.id_member' : ($see_mine ? 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', ml.anonymous, ml.id_member)' : 'ml.id_member'));
+		$mf_an = $smcFunc['PAIT_an']('mf');
+		$ml_an = $smcFunc['PAIT_an']('ml');
+		$mf_id = $smcFunc['PAIT_id']('mf');
+		$ml_id = $smcFunc['PAIT_id']('ml');
 		
 		]]></add>
 	</operation>
@@ -252,6 +153,15 @@
 <file name="$sourcedir/Post.php">
 	<!-- Post function -->
 	<operation>
+		<search position="replace"><![CDATA[t.locked, IFNULL(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg, mf.id_member,]]></search>
+		<add><![CDATA[t.locked, IFNULL(ln.id_topic, 0) AS notify, t.is_sticky, t.id_poll, t.id_last_msg, 
+				' . $smcFunc['PAIT_id']('mf') . ' AS id_member,]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[m.id_member, m.modified_time, m.smileys_enabled, ]]></search>
+		<add><![CDATA[' . $smcFunc['PAIT_id']('m') . ' AS id_member, m.anonymous, m.modified_time, m.smileys_enabled, ]]></add>
+	</operation>
+	<operation>
 		<search position="after"><![CDATA[// !!! These won't work if you're posting an event!]]></search>
 		<add><![CDATA[// Check to make sure that the user can post anonymously:
 	$context['can_post_anonymously'] = allowedTo('post_anonymously') && !empty($board_info['post_anon']);
@@ -259,58 +169,8 @@
 	]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[// Editing a message...
-	elseif (isset($_REQUEST['msg']) && !empty($topic))
-	{
-		$_REQUEST['msg'] = (int) $_REQUEST['msg'];
-
-		// Get the existing message.
-		$request = $smcFunc['db_query']('', '
-			SELECT
-				m.id_member, m.modified_time, m.smileys_enabled, ]]></search>
-		<add><![CDATA[// Editing a message...
-	elseif (isset($_REQUEST['msg']) && !empty($topic))
-	{
-		$_REQUEST['msg'] = (int) $_REQUEST['msg'];
-
-		// Decide on how to execute the query before we try to call it:
-		$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-		$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-		$id_mem = (empty($user_info['id']) || !$see_mine ? 'm.id_member' : 'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
-		
-		// Get the existing message.
-		$request = $smcFunc['db_query']('', '
-			SELECT
-				' . $id_mem . ' AS id_member, m.modified_time, m.smileys_enabled,]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[
-				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
-				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
-				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
-				m.poster_time
-			FROM {db_prefix}messages AS m
-				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
-				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})]]></search>
-		<add><![CDATA[ m.anonymous,
-				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
-				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
-				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
-				m.poster_time
-			FROM {db_prefix}messages AS m
-				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
-				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[
-			WHERE m.id_msg = {int:id_msg}
-				AND m.id_topic = {int:current_topic}',
-			array(]]></search>
-		<add><![CDATA[
-			WHERE m.id_msg = {int:id_msg}
-				AND m.id_topic = {int:current_topic}',
-			array(
-				'current_member' => (int) $user_info['id'],]]></add>
+		<search position="replace"><![CDATA[m.id_member, m.modified_time, m.smileys_enabled, ]]></search>
+		<add><![CDATA[' . $smcFunc['PAIT_id']('m') . ' AS id_member, m.anonymous, m.modified_time, m.smileys_enabled,]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA[// Check the boxes that should be checked.]]></search>
@@ -329,24 +189,8 @@
 		<add><![CDATA[$msgOptions['modify_name'] = ($user_info['id'] == $row['id_member'] && $msgOptions['anonymous'] ? $txt['anonymous'] : $user_info['name']);]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('', '
-			SELECT id_member, poster_name, poster_email, poster_time, approved
-			FROM {db_prefix}messages
-			WHERE id_msg = {int:id_msg}
-			LIMIT 1',
-			array(]]></search>
-		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-		$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-		$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-		$id_mem = (empty($user_info['id']) || !$see_mine ? 'id_member' : 'IF(anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', anonymous, id_member)');
-
-		$request = $smcFunc['db_query']('', '
-			SELECT ' . $id_mem .' AS id_member, poster_name, poster_email, poster_time, approved
-			FROM {db_prefix}messages
-			WHERE id_msg = {int:id_msg}
-			LIMIT 1',
-			array(
-				'current_member' => (int) $user_info['id'],]]></add>
+		<search position="replace"><![CDATA[SELECT id_member, poster_name, poster_email, poster_time, approved]]></search>
+		<add><![CDATA[SELECT ' . $smcFunc['PAIT_id']() .' AS id_member, poster_name, poster_email, poster_time, approved]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Profile-View.php">
@@ -376,10 +220,13 @@
 		<add><![CDATA[
 
 	// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && $memID == $user_info['id'] && ($see_who = allowedTo('post_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_num = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');]]></add>
+	$id_num = $smcFunc['PAIT_id']('m');]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[FROM {db_prefix}messages AS m
+		WHERE m.id_member = {int:current_member}' .]]></search>
+		<add><![CDATA[FROM {db_prefix}messages AS m
+		WHERE ' . $id_num . ' = {int:current_member}' .]]></add>
 	</operation>
 	<operation>
 		<search position="replace"><![CDATA[INNER JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board AND {query_see_board})') . '
@@ -393,12 +240,6 @@
 			WHERE m.id_member = {int:current_member}]]></search>
 		<add><![CDATA[INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})') . '
 			WHERE ' . $id_num .' = {int:current_member}]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[FROM {db_prefix}messages AS m
-		WHERE m.id_member = {int:current_member}' .]]></search>
-		<add><![CDATA[FROM {db_prefix}messages AS m
-		WHERE ' . $id_num . ' = {int:current_member}' .]]></add>
 	</operation>
 	<operation>
 		<search position="replace"><![CDATA[b.id_board, b.name AS bname, c.id_cat, c.name AS cname, ]]></search>
@@ -440,10 +281,7 @@
 			AND a.id_msg != {int:no_message}
 			AND m.id_member = {int:current_member}' . (!empty($board) ? ']]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && $memID == $user_info['id'] && ($see_who = allowedTo('post_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_num = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
+	$id_num = $smcFunc['PAIT_id']('m');
 
 	// Get the total number of attachments they have posted.
 	$request = $smcFunc['db_query']('', '
@@ -487,10 +325,7 @@
 		WHERE id_member_started = {int:current_member}' . (!empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0 ? '
 			AND id_board]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && $memID == $user_info['id'] && ($see_who = allowedTo('post_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_num = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
+	$id_num = $smcFunc['PAIT_id']('m');
 
 	// Number of topics started.
 	$result = $smcFunc['db_query']('', '
@@ -572,10 +407,7 @@
 			FROM {db_prefix}messages AS m
 			WHERE m.id_member]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && $memID == $user_info['id'] && ($see_who = allowedTo('post_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_num = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
+	$id_num = $smcFunc['PAIT_id']('m');
 
 	// If this is a big forum, or a large posting user, let's limit the search.
 	if ($modSettings['totalMessages'] > 50000 && $user_profile[$memID]['posts'] > 500)
@@ -607,11 +439,9 @@
 	<operation>
 		<search position="after"><![CDATA[// Get all the most recent posts.]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$id_mem = (empty($user_info['id']) || !$see_mine ? 'm.id_member' : 'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
-	$id_mem2 = str_replace('m.', 'm2.', $id_mem);
-	$anon = (empty($user_info['id']) || !$see_mine ? '0' : 'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)');
+	$id_mem = $smcFunc['PAIT_id']('m');
+	$id_mem2 = $smcFunc['PAIT_id']('m2');
+	$anon = $smcFunc['PAIT_an']('m');
 
 	]]></add>
 	</operation>
@@ -630,12 +460,6 @@
 			LEFT JOIN {db_prefix}members AS mem2 ON (mem2.id_member = ' . $id_mem2 . ')]]></add>
 	</operation>
 	<operation>
-		<search position="before"><![CDATA[LIMIT ' . count($messages),
-		array(]]></search>
-		<add><![CDATA[
-			'current_member' => (int) $user_info['id'],]]></add>
-	</operation>
-	<operation>
 		<search position="before"><![CDATA['can_delete' => false,]]></search>
 		<add><![CDATA[
 			'anonymous' => ($row['anonymous'] ? '<img src="' . $settings['images_url'] . '/ghost.png" alt="' . $txt['posted_anonymously'] . '" title="' . $txt['posted_anonymously'] . '" width="12" height="12" />&nbsp;' : ''),]]></add>
@@ -645,12 +469,10 @@
 	<operation>
 		<search position="after"><![CDATA[// This part is the same for each query.]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('post_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$an_ml = (empty($user_info['id']) || (!$see_mine && !$see_all) ? '0' : 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)');
-	$an_ms = str_replace('ml.', 'ms.', $an_ml);
-	$id_ml = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'ml.id_member' : 'IF(ml.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', ml.anonymous, ml.id_member)');
-	$id_ms = str_replace('ml.', 'ms.', $id_ml);
+	$an_ml = $smcFunc['PAIT_an']('ml');
+	$an_ms = $smcFunc['PAIT_an']('ms');
+	$id_ml = $smcFunc['PAIT_id']('ml');
+	$id_ms = $smcFunc['PAIT_id']('ms');
 
 	]]></add>
 	</operation>
@@ -688,20 +510,10 @@
 		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('', '
 		SELECT t.id_member_started, ms.subject, t.approved]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$ms_id = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'ms.id_member' : 
-		'IF(ms.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', ms.anonymous, ms.id_member)');
+	$ms_id = $smcFunc['PAIT_id']('ms');
 	
 	$request = $smcFunc['db_query']('', '
 		SELECT ' . $ms_id . ' AS id_member_started, ms.subject, t.approved]]></add>
-	</operation>
-	<operation>
-		<search position="before"><![CDATA[LIMIT 1',
-		array(
-			'current_topic' => $topic,]]></search>
-		<add><![CDATA[
-			'current_member' => (int) $user_info['id'],]]></add>
 	</operation>
 
 	<!-- DeleteMessage function -->
@@ -709,18 +521,11 @@
 		<search position="replace"><![CDATA[$request = $smcFunc['db_query']('', '
 		SELECT t.id_member_started, m.id_member, m.subject, m.poster_time, m.approved]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$m_id = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
+	$m_id = $smcFunc['PAIT_id']('m');
+	$t_id = str_replace('m.id_member', 'm.id_member_started', $m_id);
 	
 	$request = $smcFunc['db_query']('', '
-		SELECT ' . $m_id . ' AS id_member_started, ' . $m_id . ' AS id_member, m.subject, m.poster_time, m.approved]]></add>
-	</operation>
-	<operation>
-		<search position="before"><![CDATA['id_msg' => $_REQUEST['msg'],]]></search>
-		<add><![CDATA[
-			'current_member' => (int) $user_info['id'],]]></add>
+		SELECT ' . $t_id . ' AS id_member_started, ' . $m_id . ' AS id_member, m.subject, m.poster_time, m.approved]]></add>
 	</operation>
 	
 	<!-- removeMessage function -->
@@ -729,10 +534,7 @@
 		SELECT
 			m.id_member, m.icon, m.poster_time, m.subject,' . (empty($modSettings]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$m_id = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
+	$m_id = $smcFunc['PAIT_id']('m');
 	
 	$request = $smcFunc['db_query']('', '
 		SELECT
@@ -749,19 +551,12 @@
 			INNER JOIN {db_prefix}topics AS t ON (t.id_topic = m.id_topic)
 			INNER JOIN {db_prefix}messages AS m2 ON (t.id_first_msg = m2.id_msg)]]></add>
 	</operation>
-	<operation>
-		<search position="before"><![CDATA[WHERE m.id_msg = {int:id_msg}
-		LIMIT 1',
-		array(]]></search>
-		<add><![CDATA[
-			'current_member' => (int) $user_info['id'],]]></add>
-	</operation>
 </file>
 <file name="$sourcedir/Subs.php">
 	<!-- updateMemberData function -->
 	<operation>
 		<search position="before"><![CDATA['notify_announcements', 'notify_send_body', 'notify_regularity', 'notify_types',]]></search>
-		<add><![CDATA[ 'post_anon',]]></add>
+		<add><![CDATA[ 'post_anon', 'anon_posts', ]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Subs-BoardIndex.php">
@@ -769,12 +564,8 @@
 	<operation>
 		<search position="after"><![CDATA[// Find all boards and categories, as well as related information.  This will be sorted by the natural order of boards and categories, which we control.]]></search>
 		<add><![CDATA[// Decide on how to execute the query before we try to call it:
-	$see_mine = $modSettings['PAM_mode'] >= 2 && ($see_who = allowedTo('see_who_posted_anonymously'));
-	$see_all = $modSettings['PAM_mode'] == 3 && $see_who;
-	$m_id = (empty($user_info['id']) || (!$see_mine && !$see_all) ? 'm.id_member' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', m.anonymous, m.id_member)');
-	$m_an = (empty($user_info['id']) || (!$see_mine && !$see_all) ? '0' : 
-		'IF(m.anonymous ' . ($see_all ? '> 0' : '= {int:current_member}') . ', 1, 0)');
+	$m_id = $smcFunc['PAIT_id']('m');
+	$m_an = $smcFunc['PAIT_an']('m');
 
 	]]></add>
 	</operation>
@@ -837,11 +628,13 @@
 	// If poster can post anonymously, modify the data accordingly:
 	if (!empty($msgOptions['anonymous']) && allowedTo('post_anonymously'))
 	{
-		$msgOptions['anonymous'] = (!empty($modSettings['PAM_mode']) ? $posterOptions['id'] : 0);
+		$msgOptions['anonymous'] = (!empty($modSettings['PAIT_mode']) ? $posterOptions['id'] : 0);
 		$posterOptions['id'] = 0;
 		$posterOptions['name'] = $txt['anonymous'];
 		$posterOptions['email'] = '';
-	}]]></add>
+	}
+	else
+		$msgOptions['anonymous'] = 0;]]></add>
 	</operation>
 	<operation>
 		<search position="replace"><![CDATA['current_member' => $posterOptions['id'],]]></search>
