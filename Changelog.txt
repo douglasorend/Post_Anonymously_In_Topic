@@ -1,3 +1,7 @@
+v2.9 - February 13th, 2018
+o Added Spanish Lation translation, courtsey of [url=https://www.simplemachines.org/community/index.php?action=profile;u=322597]Rock Lee[/url].
+o Added [b]LICENSE.txt[/b] file to satisfy licensing concerns.
+
 v2.8 - January 7th, 2018
 o Fixed "array of integer values is empty" database error in [b]Subs-PAIT.php[/b].
 
