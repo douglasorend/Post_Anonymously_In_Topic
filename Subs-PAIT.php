@@ -327,28 +327,30 @@ function PAIT_Config($return_config = false)
 		// Make sure we got valid stuff to work with:
 		checkSession();
 		if (empty($_POST['boardaccess']))
-			$_POST['boardaccess'] = array(0);
+			$_POST['boardaccess'] = array();
 		elseif (!is_array($_POST['boardaccess']))
 			$_POST['boardaccess'] = array($_POST['boardaccess']);
 		$non_anon = array_diff(array_keys($boards), $anon = $_POST['boardaccess']);
 
 		// Mark the boards as anonymous or not:
-		$smcFunc['db_query']('', '
-			UPDATE {db_prefix}boards
-			SET post_anon = 0
-			WHERE id_board IN ({array_int:boards})',
-			array(
-				'boards' => $non_anon,
-			)
-		);
-		$smcFunc['db_query']('', '
-			UPDATE {db_prefix}boards
-			SET post_anon = 1
-			WHERE id_board IN ({array_int:boards})',
-			array(
-				'boards' => $anon,
-			)
-		);
+		if (!empty($non_anon))
+			$smcFunc['db_query']('', '
+				UPDATE {db_prefix}boards
+				SET post_anon = 0
+				WHERE id_board IN ({array_int:boards})',
+				array(
+					'boards' => $non_anon,
+				)
+			);
+		if (!empty($anon))
+			$smcFunc['db_query']('', '
+				UPDATE {db_prefix}boards
+				SET post_anon = 1
+				WHERE id_board IN ({array_int:boards})',
+				array(
+					'boards' => $anon,
+				)
+			);
 
 		// Save the rest of the settings:
 		saveDBSettings($settings);
