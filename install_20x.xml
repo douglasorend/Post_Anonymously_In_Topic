@@ -30,13 +30,9 @@
 		SELECT id_msg, ' . $id_mem . 'id_member, approved]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[$messages_request = $smcFunc['db_query']('', '
-			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, id_member, modified_time, modified_name, body,
+		<search position="replace"><![CDATA[poster_ip, id_member, modified_time, modified_name, body,
 				smileys_enabled, poster_name, poster_email, approved,]]></search>
-		<add><![CDATA[$messages_request = $smcFunc['db_query']('', '
-			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, ' . $id_mem . 'id_member, modified_time, modified_name, body,
+		<add><![CDATA[poster_ip, ' . $id_mem . 'id_member, modified_time, modified_name, body,
 				smileys_enabled, poster_name, poster_email, approved, ' . $anon . ' AS anonymous,]]></add>
 	</operation>
 	<operation>
@@ -53,7 +49,7 @@
 <file name="$sourcedir/Load.php">
 	<!-- loadBoard function -->
 	<operation>
-		<search position="before"><![CDATA[b.id_theme, b.override_theme, b.count_posts, b.id_profile, b.redirect,]]></search>
+		<search position="before"><![CDATA[b.id_theme, b.override_theme, b.count_posts,]]></search>
 		<add><![CDATA[ b.post_anon,]]></add>
 	</operation>
 	<operation>
@@ -271,17 +267,7 @@
 		// Get the existing message.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				m.id_member, m.modified_time, m.smileys_enabled, m.body,
-				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
-				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
-				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
-				m.poster_time
-			FROM {db_prefix}messages AS m
-				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
-				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})
-			WHERE m.id_msg = {int:id_msg}
-				AND m.id_topic = {int:current_topic}',
-			array(]]></search>
+				m.id_member, m.modified_time, m.smileys_enabled, ]]></search>
 		<add><![CDATA[// Editing a message...
 	elseif (isset($_REQUEST['msg']) && !empty($topic))
 	{
@@ -295,14 +281,32 @@
 		// Get the existing message.
 		$request = $smcFunc['db_query']('', '
 			SELECT
-				' . $id_mem . ' AS id_member, m.modified_time, m.smileys_enabled, m.body, m.anonymous,
+				' . $id_mem . ' AS id_member, m.modified_time, m.smileys_enabled,]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[
 				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
 				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
 				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
 				m.poster_time
 			FROM {db_prefix}messages AS m
 				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
-				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})
+				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})]]></search>
+		<add><![CDATA[ m.anonymous,
+				m.poster_name, m.poster_email, m.subject, m.icon, m.approved,
+				IFNULL(a.size, -1) AS filesize, a.filename, a.id_attach,
+				a.approved AS attachment_approved, t.id_member_started AS id_member_poster,
+				m.poster_time
+			FROM {db_prefix}messages AS m
+				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})
+				LEFT JOIN {db_prefix}attachments AS a ON (a.id_msg = m.id_msg AND a.attachment_type = {int:attachment_type})]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[
+			WHERE m.id_msg = {int:id_msg}
+				AND m.id_topic = {int:current_topic}',
+			array(]]></search>
+		<add><![CDATA[
 			WHERE m.id_msg = {int:id_msg}
 				AND m.id_topic = {int:current_topic}',
 			array(
@@ -348,6 +352,20 @@
 <file name="$sourcedir/Profile-View.php">
 	<!-- showPosts function -->
 	<operation>
+		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+				WHERE m.id_member = {int:current_member}' . (!empty($board) ? ']]></search>
+		<add><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+				WHERE ' . $id_num . ' = {int:current_member}' . (!empty($board) ? ']]></add>
+	</operation>
+	<operation error="ignore">
+		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)' . ($context['likes_given'] ? '
+					LEFT JOIN {db_prefix}likes AS l ON (l.id_message = m.id_msg)' : '') . '
+				WHERE ' . ($context['likes_given'] ? 'l.id_member = {int:current_member}' : 'm.id_member = {int:current_member}') . (!empty($board) ? ']]></search>
+		<add><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)' . ($context['likes_given'] ? '
+					LEFT JOIN {db_prefix}likes AS l ON (l.id_message = m.id_msg)' : '') . '
+				WHERE ' . ($context['likes_given'] ? 'l.id_member = {int:current_member}' : $id_num . ' = {int:current_member}') . (!empty($board) ? ']]></add>
+	</operation>
+	<operation>
 		<search position="before"><![CDATA[function showPosts($memID)
 {
 	global $txt, $user_info, $scripturl, $modSettings]]></search>
@@ -372,20 +390,24 @@
 	</operation>
 	<operation>
 		<search position="replace"><![CDATA[INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})') . '
-			WHERE m.id_member = {int:current_member}' . (!empty($board) ? ']]></search>
+			WHERE m.id_member = {int:current_member}]]></search>
 		<add><![CDATA[INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})') . '
-			WHERE ' . $id_num .' = {int:current_member}' . (!empty($board) ? ']]></add>
+			WHERE ' . $id_num .' = {int:current_member}]]></add>
 	</operation>
 	<operation>
 		<search position="replace"><![CDATA[FROM {db_prefix}messages AS m
-		WHERE m.id_member = {int:current_member}' . (!empty($board) ? ']]></search>
+		WHERE m.id_member = {int:current_member}' .]]></search>
 		<add><![CDATA[FROM {db_prefix}messages AS m
-		WHERE ' . $id_num . ' = {int:current_member}' . (!empty($board) ? ']]></add>
+		WHERE ' . $id_num . ' = {int:current_member}' .]]></add>
 	</operation>
 	<operation>
-		<search position="replace"><![CDATA[b.id_board, b.name AS bname, c.id_cat, c.name AS cname, t.id_member_started, t.id_first_msg, t.id_last_msg,
+		<search position="replace"><![CDATA[b.id_board, b.name AS bname, c.id_cat, c.name AS cname, ]]></search>
+		<add><![CDATA[b.id_board, b.name AS bname, c.id_cat, c.name AS cname, ]]></add>
+	</operation>
+	<operation>
+		<search position="replace"><![CDATA[t.id_member_started, t.id_first_msg, t.id_last_msg,
 					t.approved, m.body, m.smileys_enabled, m.subject, m.poster_time, m.id_topic, m.id_msg]]></search>
-		<add><![CDATA[b.id_board, b.name AS bname, c.id_cat, c.name AS cname, ' . $id_num . ' AS id_member_started, t.id_first_msg, t.id_last_msg,
+		<add><![CDATA[' . $id_num . ' AS id_member_started, t.id_first_msg, t.id_last_msg,
 					t.approved, m.body, m.smileys_enabled, m.subject, m.poster_time, m.id_topic, m.id_msg, m.anonymous]]></add>
 	</operation>
 	<operation>
@@ -399,12 +421,6 @@
 					m.subject, m.poster_time, m.approved]]></search>
 		<add><![CDATA[' . $id_num . ' AS id_member_started, t.id_first_msg, t.id_last_msg, m.body, m.smileys_enabled,
 					m.subject, m.poster_time, m.approved, m.anonymous]]></add>
-	</operation>
-	<operation>
-		<search position="replace"><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
-				WHERE m.id_member = {int:current_member}' . (!empty($board) ? ']]></search>
-		<add><![CDATA[LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
-				WHERE ' . $id_num . ' = {int:current_member}' . (!empty($board) ? ']]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA[$row['poster_time'] + $modSettings['edit_disable_time'] * 60 >= time()),]]></search>

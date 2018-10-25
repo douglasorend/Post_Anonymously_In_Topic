@@ -1,5 +1,5 @@
 [hr]
-[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v1.5[/b][/size][/color]
+[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v1.6[/b][/size][/color]
 [url=http://www.simplemachines.org/community/index.php?action=profile;u=253913][b]By Dougiefresh[/b][/url] -> [url=http://custom.simplemachines.org/mods/index.php?mod=4078]Link to Mod[/url]
 [/center]
 [hr]
@@ -31,6 +31,9 @@ o [url=http://www.simplemachines.org/community/index.php?topic=538075.0]Option t
 This mod was tested on SMF 2.0.11 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
 
 [url=http://custom.simplemachines.org/mods/index.php?mod=2324]Recount Member Posts[/url] must be installed prior to installing this mod if you want the anonymous posts recounted at the same time as the regular posts.
+
+[color=blue][b][size=12pt][u]Compatibility With Likes Mod[/u][/size][/b][/color]
+If operation # 1 in the [b]Sources/Profile-View.php[/b] reads [b]Test Failed[/b] and operation # 2 is [b]Test Successful[/b], then it is safe to proceed with installation.  Operation # 2 addresses a weird change that the Likes mod makes that I can't overcome any other way....
 
 [color=blue][b][size=12pt][u]Changelog[/u][/size][/b][/color]
 The changelog has been removed and can be seen at [url=http://www.xptsp.com/board/index.php?topic=600.msg944#msg944]XPtsp.com[/url].

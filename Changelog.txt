@@ -1,3 +1,6 @@
+v1.6 - October 30th, 2016
+o Mostly resolved install errors when using with the Likes mod.
+
 v1.5 - September 14th, 2016
 o Fixed visible permissions issue when viewing permissions in [b]Simple[/b] mode.
 
