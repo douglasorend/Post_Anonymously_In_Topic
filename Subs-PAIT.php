@@ -111,8 +111,8 @@ function PAIT_Exit($flag)
 
 function PAIT_Display(&$buttons)
 {
-	global $context, $scripturl;
-	if (allowedTo('post_anonymously'))
+	global $context, $scripturl, $board_info;
+	if (allowedTo('post_anonymously') && !empty($board_info['post_anon']))
 		$buttons['post_anon'] = array('test' => 'can_reply', 'text' => 'reply_anonymously', 'image' => 'reply.gif', 'lang' => true, 'url' => $scripturl . '?action=post;topic=' . $context['current_topic'] . '.' . $context['start'] . ';last_msg=' . $context['topic_last_message'] . ';anon');
 }
 

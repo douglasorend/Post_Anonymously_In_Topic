@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.2</version>
+<version>2.3</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -754,7 +754,7 @@
 	<operation>
 		<search position="after"><![CDATA[// Show a checkbox for quick moderation?]]></search>
 		<add><![CDATA[// Can we toggle the status of the anonymity of this post?
-		if ($context['post_anonymously'] && $user_info['id'] == $message['member']['id'])
+		if ($context['post_anonymously'] && $user_info['id'] == $message['member']['id'] && !empty($board_info['post_anon']))
 			echo '
 									<li class="modify_button"><a href="', $scripturl, '?action=pait_toggle;anon=', $message['id'], '">', $message['anonymous'] ? $txt['make_normal'] : $txt['make_anonymous'], '</a></li>';
 
