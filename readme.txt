@@ -1,40 +1,39 @@
 [hr]
-[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v2.0[/b][/size][/color]
+[center][color=red][size=16pt][b]POST ANONYMOUSLY IN TOPICS v2.1[/b][/size][/color]
 [url=http://www.simplemachines.org/community/index.php?action=profile;u=253913][b]By Dougiefresh[/b][/url] -> [url=http://custom.simplemachines.org/mods/index.php?mod=4078]Link to Mod[/url]
 [/center]
 [hr]
 
 [color=blue][b][size=12pt][u]Introduction[/u][/size][/b][/color]
-This mod adds a permission-based membergroup ability to post anonymously within topics to your forum.  Members with the [b]Post Anonymously[/b] permission can post in boards that allow anonymous posting.
+This mod adds functionality to allow users to post anonymously within boards on the forum, and (depending on the settings) whether they can see who posted anonymously.
 
-The [b]Who Can See Anonymous Poster[/b] setting controls what can be seen:
-o [b]No One.  Also disables recording Member ID[/b] - No one will ever know who made the post!  Ninja mode!
-o [b]No One[/b] - The member who posted anonymously is recorded, but no one will ever know!
-o [b]Only Original Poster (OP)[/b] - Only the member posting anonymously can see his/her anonymous posts.
-o [b]Everyone with "See Who Posted Anonymously" permission[/b] - OP plus membergroups with [b]Who Can See Anonymous Poster[/b] permission can see anonymous posts.
+[color=blue][b][size=12pt][u]Admin Settings[/u][/size][/b][/color]
+There are new settings under [b]Admin[/b] -> [b]Configuration[/b] -> [b]Modification Settings[/b] -> [b]PAIT[/b]:
+[i]1)[/i] Which boards the users are allowed to post anonymously in.
+[i]2)[/i] [b]Hide users posting anonymously[/b]
+[i]3)[/i] [b]Who Can See Anonymous Poster[/b] setting controls what can be seen:
+  > [b]No One.  Also disables recording Member ID[/b] - No one will ever know who made the post!  Ninja mode!
+  > [b]No One[/b] - The member who posted anonymously is recorded, but no one will ever know!
+  > [b]Only poster can see their anonymous post[/b] - Only the member posting anonymously can see his/her anonymous posts.
+  > [b]Everyone with "See Who Posted Anonymously" permission[/b] - OP plus membergroups with [b]Who Can See Anonymous Poster[/b] permission can see anonymous posts.
+[i]4)[/i] [b]See Who Posted Anonymously[/b] membergroups.
+[i]5)[/i] [b]Topic Starter can see who posted anonymously?[/b] allows topic starters to see all anonymous posters in THEIR topic.
+[i]6)[/i] [b]Topic Starter See Who Posted[/b] membergroups.
 
 Admins and membergroups with the appropriate permission granted can also view who posted what anonymously, assuming that the posting setting is set to [b]"See Who Posted Anonymously" permission permitted[/b]....  Admin who don't want this feature active can disable it by going into the [b]Post Settings[/b] page and change the [b]Who Can See Anonymous Poster[/b] setting.
 
-[color=blue][b][size=12pt][u]Admin Settings[/u][/size][/b][/color]
-There is a new setting under [b]Admin[/b] -> [b]Configuration[/b] -> [b]Modification Settings[/b] called [b]Able to post anonymously in this board?[/b], which controls whether membergroups can post anonymously in that board.
-
-There are two new membergroup permissions added in the Admin Area:
-o [b]Post Anonymously[/b]
-o [b]See Who Posted Anonymously[/b]
-
-The [b]Who Can See Anonymous Poster[/b] is under [b]Admin[/b] -> [b]Forum[/b] -> [b]Posts and Topics[/b] -> [b]Post Settings[/b] area.  The settings are described under [b]Introduction[/b].  All setting options disable the "See Who Posted Anonymously" permission except for the last option.  The default setting for the mod is [b]Everyone with "See Who Posted Anonymously" permission[/b].
-
 [color=blue][b][size=12pt][u]Related Discussion Thread[/u][/size][/b][/color]
 o [url=http://www.simplemachines.org/community/index.php?topic=538075.0]Option to post Anonymously on topics[/url]
+o [url=http://www.simplemachines.org/community/index.php?topic=544446.msg3897899#msg3897899]Topic Starters Can See Who Posted Anonymously[/url]
 
 [color=blue][b][size=12pt][u]Compatibility Notes[/u][/size][/b][/color]
-This mod was tested on SMF 2.0.11 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
-
-[color=blue][b][size=12pt][u]Compatibility With Likes Mod[/u][/size][/b][/color]
-If operation # 1 in the [b]Sources/Profile-View.php[/b] reads [b]Test Failed[/b] and operation # 2 is [b]Test Successful[/b], then it is safe to proceed with installation.  Operation # 2 addresses a weird change that the Likes mod makes that I can't overcome any other way....
+This mod was tested on SMF 2.0.12 and SMF 2.1 Beta 2, but should work on SMF 2.0 and up.  SMF 1.x is not and will not be supported.
 
 [color=blue][b][size=12pt][u]Changelog[/u][/size][/b][/color]
 The changelog has been removed and can be seen at [url=http://www.xptsp.com/board/index.php?topic=600.msg944#msg944]XPtsp.com[/url].
+
+[color=blue][b][size=12pt][u]Compatibility With Likes Pro mod[/u][/size][/b][/color]
+If operation # 1 in the [b]Sources/Profile-View.php[/b] reads [b]Test Failed[/b] and operation # 2 is [b]Test Successful[/b], then it is safe to proceed with installation.  Operation # 2 addresses a weird change that the pro version Likes mod makes that I can't overcome any other way....
 
 [color=blue][b][size=12pt][u]License[/u][/size][/b][/color]
 Copyright (c) 2015 - 2016, Douglas Orend

@@ -20,9 +20,13 @@ if (SMF == 'SSI')
 // Define the hooks
 $hook_functions = array(
 	'integrate_pre_include' => '$sourcedir/Subs-PAIT.php',
-	'integrate_load_theme' => 'PAIT_Load',
+	'integrate_verify_user' => 'PAIT_Verify_User',
+	'integrate_load_theme' => 'PAIT_Init',
+	'integrate_actions' => 'PAIT_Actions',
 	'integrate_load_permissions' => 'PAIT_Permissions',
-	'integrate_general_mod_settings' => 'PAIT_Settings',
+	'integrate_modify_modifications' => 'PAIT_Area',
+	'integrate_display_buttons' => 'PAIT_Display',
+	'integrate_exit' => 'PAIT_Exit',
 );
 
 // Adding or removing them?

@@ -1,3 +1,14 @@
+v2.1 - November 30th, 2016
+o Added code to allow user to click to make a post anonymous or not from the post display screen.
+o Added new permission to allow topic starters to see who posted anonymously within the board.
+o Added option to hide user while editing an anonymous post on the board.
+o Added code so that user is hidden while posting once "Anonymous Post" checkbox is checked.
+o Added code so that user can start an anonymous post from the Topic Display pages.
+o Moved the settings for this mod onto a seperate page under [b]Modification Settings[/b].
+o Added new permission selection settings to the mod settings.
+o Added list of boards capable of anonymous posting to the mod settings.
+o [b]NOTE:[/b] SMF 2.1 installer brought up to date with version 2.0 changes.
+
 v2.0 - November 26th, 2016
 o Added code to globalize related database decisions into function in [b]Subs-PAIT.php[/b]
 o Moved permissions and settings code into [b]Subs-PAIT.php[/b].

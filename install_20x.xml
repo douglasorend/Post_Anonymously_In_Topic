@@ -3,7 +3,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 <id>Dougiefresh:AnonymousPost</id>
 <name>Post Anonymously In Topic</name>
-<version>2.0</version>
+<version>2.1</version>
 
 <!------------------------------------------------------------------------------>
 <!-- Source changes                                                           -->
@@ -173,9 +173,19 @@
 		<add><![CDATA[' . $smcFunc['PAIT_id']('m') . ' AS id_member, m.anonymous, m.modified_time, m.smileys_enabled,]]></add>
 	</operation>
 	<operation>
+		<search position="before"><![CDATA[$context['icon'] = 'xx';]]></search>
+		<add><![CDATA[
+		$context['posted_anonymously'] = !empty($row['anonymous']) || isset($_GET['anon']);]]></add>
+	</operation>
+	<operation>
 		<search position="before"><![CDATA[// Check the boxes that should be checked.]]></search>
 		<add><![CDATA[
-		$context['posted_anonymously'] = !empty($row['anonymous']);]]></add>
+		$context['posted_anonymously'] = !empty($row['anonymous']) || isset($_GET['anon']);]]></add>
+	</operation>
+	<operation>
+		<search position="before"><![CDATA[$context['is_new_post'] = !isset($_REQUEST['msg']);]]></search>
+		<add><![CDATA[
+		$context['PAIT_hide_user'] = !empty($row['anonymous']) || isset($_GET['anon']);]]></add>
 	</operation>
 
 	<!-- Post2 function -->
@@ -558,6 +568,16 @@
 		<search position="before"><![CDATA['notify_announcements', 'notify_send_body', 'notify_regularity', 'notify_types',]]></search>
 		<add><![CDATA[ 'post_anon', 'anon_posts', ]]></add>
 	</operation>
+	
+	<!-- writeLog function -->
+	<operation>
+		<search position="after"><![CDATA[// If we are showing who is viewing a topic, let's see if we are, and force an update if so - to make it accurate.]]></search>
+		<add><![CDATA[// Are we doing the PAIT AJAX thing?  If so, return to caller without doing anything:
+	if (isset($_GET['action']) && $_GET['action'] == 'pait_ajax' && isset($_GET['u']))
+		return;
+
+	]]></add>
+	</operation>
 </file>
 <file name="$sourcedir/Subs-BoardIndex.php">
 	<!-- getBoardIndex function -->
@@ -599,12 +619,13 @@
 	<!-- getBoardTree function -->
 	<operation>
 		<search position="before"><![CDATA[b.num_posts, b.num_topics, c.id_cat, c.name AS cat_name, c.cat_order, c.can_collapse]]></search>
-		<add><![CDATA[, b.post_anon]]></add>
+		<add><![CDATA[, b.post_anon, b.child_level]]></add>
 	</operation>
 	<operation>
 		<search position="before"><![CDATA['order' => $row['board_order'],]]></search>
 		<add><![CDATA[
-				'post_anon' => $row['post_anon'],]]></add>
+				'post_anon' => $row['post_anon'],
+				'child_level' => $row['child_level'],]]></add>
 	</operation>
 </file>
 <file name="$sourcedir/Subs-Members.php">
@@ -674,72 +695,9 @@
 	</operation>
 	<operation>
 		<search position="after"><![CDATA[// Lock and or sticky the post.]]></search>
-		<add><![CDATA[// We need to do a lot of work to change posts to/from anonymous...
-	if (isset($msgOptions['anonymous']) && allowedTo('post_anonymously'))
-	{
-		$request = $smcFunc['db_query']('', '
-			SELECT
-				msg.id_topic, mem.id_member, mem.member_name, mem.email_address, msg.anonymous
-			FROM {db_prefix}messages AS msg
-				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = IF(msg.anonymous = 0, msg.id_member, msg.anonymous))
-			WHERE msg.id_msg = {int:id_msg}',
-			array(
-				'id_msg' => $msgOptions['id'],
-			)
-		);
-		$row = $smcFunc['db_fetch_assoc']($request);
-		$smcFunc['db_free_result']($request);
-
-		if (!empty($row) && !empty($msgOptions['anonymous']) && empty($row['anonymous']))
-		{
-			$smcFunc['db_query']('', '
-				UPDATE {db_prefix}messages
-				SET anonymous = id_member, id_member = 0, poster_name = {string:poster}, poster_email = {string:email}
-				WHERE id_msg = {int:id_msg}',
-				array(
-					'id_msg' => $msgOptions['id'],
-					'poster' => $txt['anonymous'],
-					'email' => '',
-				)
-			);
-			$smcFunc['db_query']('', '
-				UPDATE {db_prefix}topics
-				SET id_member_started = IF(id_first_msg = {int:id_msg}, 0, id_member_started),
-					id_member_updated = IF(id_last_msg = {int:id_msg}, 0, id_member_updated)
-				WHERE id_topic = {int:id_topic}',
-				array(
-					'id_msg' => $msgOptions['id'],
-					'id_topic' => $row['id_topic'],
-				)
-			);
-			updateMemberData($msgOptions['anonymous'], array('posts' => '+', 'anon_posts' => '-'));
-		}
-		elseif (!empty($row) && empty($msgOptions['anonymous']) && !empty($row['anonymous']))
-		{
-			$smcFunc['db_query']('', '
-				UPDATE {db_prefix}messages
-				SET id_member = anonymous, anonymous = 0, poster_name = {string:poster}, poster_email = {string:email}
-				WHERE id_msg = {int:id_msg}',
-				array(
-					'id_msg' => $msgOptions['id'],
-					'poster' => $row['member_name'],
-					'email' => $row['email_address'],
-				)
-			);
-			$smcFunc['db_query']('', '
-				UPDATE {db_prefix}topics
-				SET id_member_started = IF(id_first_msg = {int:id_msg}, {int:anonymous}, id_member_started),
-					id_member_updated = IF(id_first_msg = {int:id_msg}, {int:anonymous}, id_member_updated)
-				WHERE id_topic = {int:id_topic}',
-				array(
-					'id_msg' => $msgOptions['id'],
-					'anonymous' => $row['anonymous'],
-					'id_topic' => $row['id_topic'],
-				)
-			);
-			updateMemberData($row['anonymous'], array('posts' => '-', 'anon_posts' => '+'));
-		}
-	}
+		<add><![CDATA[// Do some work to change posts to/from anonymous, if necessary:
+	if (allowedTo('post_anonymously'))
+		pait_toggle($msgOptions['id'], $msgOptions['anonymous'], false);
 
 	]]></add>
 	</operation>
@@ -786,8 +744,21 @@
 </file>
 <file name="$themedir/Display.template.php">
 	<operation>
+		<search position="before"><![CDATA[global $context, $settings, $options, $txt, $scripturl, $modSettings]]></search>
+		<add><![CDATA[, $user_info]]></add>
+	</operation>
+	<operation>
 		<search position="after"><![CDATA[, $message['member']['link'], ']]></search>
 		<add><![CDATA[, (!empty($message['anonymous']) ? '<img src="' . $settings['images_url'] . '/ghost.png" alt="' . $txt['posted_anonymously'] . '" title="' . $txt['posted_anonymously'] . '" />&nbsp;' : '')]]></add>
+	</operation>
+	<operation>
+		<search position="after"><![CDATA[// Show a checkbox for quick moderation?]]></search>
+		<add><![CDATA[// Can we toggle the status of the anonymity of this post?
+		if ($context['post_anonymously'] && $user_info['id'] == $message['member']['id'])
+			echo '
+									<li class="modify_button"><a href="', $scripturl, '?action=pait_toggle;anon=', $message['id'], '">', $message['anonymous'] ? $txt['make_normal'] : $txt['make_anonymous'], '</a></li>';
+
+		]]></add>
 	</operation>
 </file>
 <file name="$themedir/ManageBoards.template.php">
@@ -825,9 +796,33 @@
 </file>
 <file name="$themedir/Post.template.php">
 	<operation>
+		<search position="before"><![CDATA[global $context, $settings, $options, $txt, $scripturl, $modSettings, $counter]]></search>
+		<add><![CDATA[, $user_info]]></add>
+	</operation>
+	<operation>
 		<search position="before"><![CDATA[', $context['show_approval'] ? '<li><label for="approve"><input type="checkbox" name="approve" id="approve" value="2" class="input_check" ' . ($context['show_approval'] === 2 ? 'checked="checked"' : '') . ' /> ' . $txt['approve_this_post'] . '</label></li>' : '', ']]></search>
 		<add><![CDATA[
-							', $context['can_post_anonymously'] ? '<li><label for="anonymous"><input type="checkbox" name="anonymous" id="anonymous" value="1" class="input_check" ' . (!empty($context['posted_anonymously']) ? 'checked="checked"' : '') . ' /> ' . $txt['post_anonymously'] . '</label></li>' : '', ']]></add>
+							', $context['can_post_anonymously'] ? '<li><label for="anonymous"><input type="checkbox" name="anonymous" id="anonymous" value="1" class="input_check" ' . (!empty($context['posted_anonymously']) ? 'checked="checked"' : '') . (!empty($modSettings['PAIT_Hide_User']) ? ' onChange="PAIT_Hide_User(); return false;"' : '') . ' /> ' . $txt['post_anonymously'] . '</label></li>' : '', ']]></add>
+	</operation>
+	<operation>
+		<search position="after"><![CDATA[// The functions used to preview a posts without loading a new page.]]></search>
+		<add><![CDATA[// Load the AJAX portion of Post Anonymously In Topic mod:
+	if (!empty($context['can_post_anonymously']) && !empty($modSettings['PAIT_Hide_User']))
+		echo '
+			function PAIT_Hide_User() {
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
+						if (xmlhttp.responseText != "OK") {
+							alert(xmlhttp.responseText);
+						}
+					}
+				}
+				xmlhttp.open("GET", "' . $scripturl . '?action=pait_ajax;u=' . $user_info['id'] . '", true);
+				xmlhttp.send();
+			}';
+	
+	]]></add>
 	</operation>
 </file>
 <file name="$themedir/Profile.template.php">
